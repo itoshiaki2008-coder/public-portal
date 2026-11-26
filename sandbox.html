@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小型船舶 ツール集（サンドボックス表示）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#0b1624;--bg2:#152538;--fg:#dbe7f3;--card:rgba(20,36,56,.72);--line:rgba(120,190,230,.28);--head:rgba(8,18,30,.92);--headfg:#e6f4ff;--grp:rgba(40,90,130,.35);--link:#5fd4ff;--act:rgba(60,150,200,.28);--side:rgba(10,22,36,.96);--glow:0 0 12px rgba(80,190,255,.45)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;color:var(--fg);font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;line-height:1.6}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(90,170,220,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(90,170,220,.07) 1px,transparent 1px);background-size:32px 32px}
+.app,.top{position:relative}
+#side h1,.panel h2,.top .title,td .repo a{font-family:"Share Tech Mono","Hiragino Kaku Gothic ProN","Yu Gothic",monospace}
+.app{display:flex;height:100dvh;overflow:hidden;position:relative}
+
+/* サイドメニュー */
+#side{width:290px;flex:none;background:var(--side);border-right:1px solid var(--line);overflow-y:auto;overflow-x:hidden;transition:width .25s ease,margin .25s ease}
+body.collapsed #side{width:0;border-right:none}
+#side .inner{width:290px;padding:12px 10px 24px}
+#side h1{font-size:1rem;margin:4px 6px 12px}
+#side details{margin-bottom:6px}
+#side summary{cursor:pointer;font-weight:700;padding:8px 10px;border-radius:6px;background:var(--grp);list-style:none;display:flex;justify-content:space-between;align-items:center}
+#side summary::-webkit-details-marker{display:none}
+#side summary::after{content:"▾";transition:transform .2s}
+#side details:not([open]) summary::after{transform:rotate(-90deg)}
+#side a.item{display:block;padding:8px 10px 8px 16px;margin-top:2px;border-radius:6px;color:var(--fg);text-decoration:none;border-left:3px solid transparent}
+#side a.item:hover{background:var(--grp)}
+#side a.item.active{background:var(--act);border-left-color:var(--link);box-shadow:var(--glow)}
+#side a.item .n{display:block;font-weight:600;word-break:break-all}
+#side a.item .d{display:block;font-size:.82em;opacity:.8}
+#side a.home{display:block;padding:8px 10px;border-radius:6px;color:var(--fg);text-decoration:none;font-weight:700;margin-bottom:6px}
+#side a.home.active{background:var(--act)}
+
+/* メイン */
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--head);color:var(--headfg);border-bottom:1px solid var(--line)}
+.top button{background:rgba(60,150,200,.25);color:inherit;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.95rem;cursor:pointer}
+.top button:hover{box-shadow:var(--glow);background:rgba(60,150,200,.4)}
+#back{display:none}
+.top .title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.top a{color:inherit;font-size:.9rem;white-space:nowrap}
+#view{flex:1;min-height:0;position:relative}
+#frame{width:100%;height:100%;border:0;background:#fff;display:none}
+.panel{display:none;height:100%;overflow:auto;padding:20px 16px}
+.panel .box{max-width:960px;margin:0 auto}
+.panel h2{font-size:1.2rem;margin:0 0 12px}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:420px}
+th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:middle}
+thead th{background:rgba(30,80,120,.7);color:var(--headfg);white-space:nowrap}
+td.grp{background:var(--grp);font-weight:700;text-align:center;white-space:nowrap;width:6em}
+td .repo{display:block;font-weight:700}
+td .desc{display:block;font-size:.9em;opacity:.85;margin-top:2px}
+a{color:var(--link);text-decoration:none;word-break:break-all}
+a:hover{text-decoration:underline}
+.btn{display:inline-block;margin-top:8px;padding:8px 18px;border-radius:999px;background:rgba(60,150,200,.35);border:1px solid var(--line);color:var(--headfg);text-decoration:none;box-shadow:var(--glow)}
+
+@media (max-width:720px){
+  #side{position:absolute;z-index:10;top:0;bottom:0;left:0;box-shadow:2px 0 12px rgba(0,0,0,.25)}
+}
+</style>
+</head>
+<body class="">
+<div class="app">
+  <nav id="side" aria-label="メニュー"><div class="inner" id="menu"></div></nav>
+  <main>
+    <div class="top">
+      <button id="toggle" type="button" aria-label="メニューの開閉" aria-expanded="true">☰</button>
+      <button id="back" type="button">← ポータルに戻る</button>
+      <div class="title" id="title">小型船舶 ツール集</div>
+      <a id="open" href="#" target="_blank" rel="noopener" style="display:none">新しいタブで開く ↗</a>
+    </div>
+    <div id="view">
+      <div class="panel" id="home"><div class="box">
+        <h2>ツール一覧</h2>
+        <div class="wrap"><table>
+          <thead><tr><th>グループ</th><th>リポジトリ名またはURL ／ 説明</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table></div>
+      </div></div>
+      <div class="panel" id="ext"><div class="box">
+        <h2 id="extTitle"></h2>
+        <p>このサイトは外部サイトのため、ページ内（サンドボックス）では表示せず、新しいタブで開きます。</p>
+        <a class="btn" id="extLink" href="#" target="_blank" rel="noopener">新しいタブで開く ↗</a>
+      </div></div>
+      <iframe id="frame" title="ツール表示"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+        referrerpolicy="no-referrer" loading="lazy"></iframe>
+    </div>
+  </main>
+</div>
+
+<script>
+const USER = "itoshiaki2008-coder";
+// [グループ, リポジトリ名またはURL, 説明]  ※URLで始まる行は外部サイト扱い（新しいタブ）
+const DATA = [
+ ["安全設備","anzenven","小型船舶安全設備等（知床関係）義務化 — ベン図"],
+ ["安全設備","ikada","小型船舶事業船のいかだ申告"],
+ ["航区","article7_simulator","小型船舶航行区域選択"],
+ ["航区","maplink","小型船舶用航行区域白地図プロッティング"],
+ ["航区","jci_links_final","小型船舶主航行区域検索"],
+ ["航区","loetemp","小型船舶安全規則細則附属書16_低水温水域マップ"],
+ ["備品","anchor","小型船舶係船索アンカーロープ種類選択"],
+ ["備品","rinjikaikou","小型船舶臨時検査－回航用追加法定備品"],
+ ["備品","radio_equipment","小型船舶に搭載する無線設備"],
+ ["手数料","https://jci.go.jp/procedure/tesuuryou.html","小型船舶検査機構手数料"]
+];
+const items = DATA.map(([g, r, d]) => {
+  const ext = /^https?:\/\//.test(r);
+  return {g, id: ext ? "fee" : r, name: r, desc: d, ext,
+          url: ext ? r : `https://${USER}.github.io/${r}/`};
+});
+const groups = [...new Set(items.map(i => i.g))];
+
+const $ = id => document.getElementById(id);
+const menu = $("menu");
+
+// メニュー生成
+const h1 = document.createElement("h1"); h1.textContent = "小型船舶 ツール集"; menu.appendChild(h1);
+const home = document.createElement("a");
+home.className = "home"; home.href = "#"; home.textContent = "🏠 一覧"; home.dataset.id = "";
+menu.appendChild(home);
+groups.forEach(g => {
+  const det = document.createElement("details"); det.open = true; det.dataset.g = g;
+  const sum = document.createElement("summary"); sum.textContent = g; det.appendChild(sum);
+  items.filter(i => i.g === g).forEach(i => {
+    const a = document.createElement("a");
+    a.className = "item"; a.href = "#" + i.id; a.dataset.id = i.id;
+    const n = document.createElement("span"); n.className = "n"; n.textContent = i.ext ? "検査機構 手数料ページ" : i.name;
+    const d = document.createElement("span"); d.className = "d"; d.textContent = i.desc;
+    a.append(n, d); det.appendChild(a);
+  });
+  menu.appendChild(det);
+});
+
+// 一覧表（同じグループのセルを縦結合）
+const tbody = $("tbody");
+items.forEach((r, i) => {
+  const tr = document.createElement("tr");
+  if (i === 0 || items[i-1].g !== r.g) {
+    let span = 1; while (items[i+span] && items[i+span].g === r.g) span++;
+    const g = document.createElement("td"); g.className = "grp"; g.rowSpan = span; g.textContent = r.g;
+    tr.appendChild(g);
+  }
+  const td = document.createElement("td");
+  const a = document.createElement("a"); a.href = "#" + r.id; a.textContent = r.name;
+  const top = document.createElement("span"); top.className = "repo"; top.appendChild(a);
+  const bot = document.createElement("span"); bot.className = "desc"; bot.textContent = r.desc;
+  td.append(top, bot); tr.appendChild(td); tbody.appendChild(tr);
+});
+
+// 表示切り替え
+const frame = $("frame"), homeP = $("home"), extP = $("ext");
+function show(which){
+  homeP.style.display = which === "home" ? "block" : "none";
+  extP.style.display  = which === "ext"  ? "block" : "none";
+  frame.style.display = which === "frame" ? "block" : "none";
+}
+function route(){
+  const id = decodeURIComponent(location.hash.slice(1));
+  const it = items.find(i => i.id === id);
+  document.querySelectorAll("#menu a[data-id]").forEach(a => a.classList.toggle("active", a.dataset.id === (it ? it.id : "")));
+  const open = $("open");
+  if (!it) {
+    $("title").textContent = "小型船舶 ツール集";
+    open.style.display = "none"; $("back").style.display = "none"; frame.removeAttribute("src"); show("home"); return;
+  }
+  $("title").textContent = it.g + "｜" + it.desc;
+  open.href = it.url; open.style.display = "inline"; $("back").style.display = "inline-block";
+  if (it.ext) {
+    frame.removeAttribute("src");
+    $("extTitle").textContent = it.desc; $("extLink").href = it.url; show("ext");
+  } else {
+    if (frame.getAttribute("src") !== it.url) frame.src = it.url;
+    show("frame");
+  }
+  if (matchMedia("(max-width:720px)").matches) setCollapsed(true);
+}
+$("back").addEventListener("click", () => { location.hash = ""; });
+window.addEventListener("hashchange", route);
+
+// サイドメニューの開閉（状態は保存しない）
+function setCollapsed(c){
+  document.body.classList.toggle("collapsed", c);
+  $("toggle").setAttribute("aria-expanded", String(!c));
+}
+$("toggle").addEventListener("click", () => setCollapsed(!document.body.classList.contains("collapsed")));
+if (matchMedia("(max-width:720px)").matches) setCollapsed(true);
+
+route();
+</script>
+</body>
+</html>
