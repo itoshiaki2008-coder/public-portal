@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小型船舶 ツール集</title>
+<style>
+:root{--bg:#f6f8fa;--fg:#1f2328;--card:#fff;--line:#d0d7de;--head:#0b3d6b;--headfg:#fff;--grp:#eaf2fa;--link:#0969da}
+@media (prefers-color-scheme:dark){
+:root{--bg:#0d1117;--fg:#e6edf3;--card:#161b22;--line:#30363d;--head:#1f4e79;--headfg:#fff;--grp:#1b2a3a;--link:#58a6ff}}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 16px;background:var(--bg);color:var(--fg);font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;line-height:1.6}
+main{max-width:960px;margin:0 auto}
+h1{font-size:1.4rem;margin:0 0 16px}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:420px}
+th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:middle}
+thead th{background:var(--head);color:var(--headfg);white-space:nowrap}
+td.grp{background:var(--grp);font-weight:700;text-align:center;white-space:nowrap;width:6em}
+td .repo{display:block;font-weight:700}
+td .desc{display:block;font-size:.9em;opacity:.85;margin-top:2px}
+a{color:var(--link);text-decoration:none;word-break:break-all}
+a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<main>
+<h1>小型船舶 ツール集</h1>
+<div class="wrap">
+<table id="t">
+<thead><tr><th>グループ</th><th>リポジトリ名またはURL ／ 説明</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</main>
+<script>
+const USER = "itoshiaki2008-coder";
+const DATA = [
+ ["安全設備","anzenven","小型船舶安全設備等（知床関係）義務化 — ベン図"],
+ ["安全設備","ikada","小型船舶事業船のいかだ申告"],
+ ["航区","article7_simulator","小型船舶航行区域選択"],
+ ["航区","maplink","小型船舶用航行区域白地図プロッティング"],
+ ["航区","jci_links_final","小型船舶主航行区域検索"],
+ ["航区","loetemp","小型船舶安全規則細則附属書16_低水温水域マップ"],
+ ["備品","anchor","小型船舶係船索アンカーロープ種類選択"],
+ ["備品","rinjikaikou","小型船舶臨時検査－回航用追加法定備品"],
+ ["備品","radio_equipment","小型船舶に搭載する無線設備"],
+ ["手数料","https://jci.go.jp/procedure/tesuuryou.html","小型船舶検査機構手数料"]
+];
+const tbody = document.querySelector("#t tbody");
+DATA.forEach((r, i) => {
+  const tr = document.createElement("tr");
+  if (i === 0 || DATA[i-1][0] !== r[0]) {
+    let span = 1;
+    while (DATA[i+span] && DATA[i+span][0] === r[0]) span++;
+    const g = document.createElement("td");
+    g.className = "grp"; g.rowSpan = span; g.textContent = r[0];
+    tr.appendChild(g);
+  }
+  const isUrl = /^https?:\/\//.test(r[1]);
+  const href = isUrl ? r[1] : `https://${USER}.github.io/${r[1]}/`;
+  const label = r[1];
+  const td = document.createElement("td");
+  const a = document.createElement("a");
+  a.href = href; a.textContent = label; a.target = "_blank"; a.rel = "noopener";
+  const top = document.createElement("span");
+  top.className = "repo"; top.appendChild(a);
+  const bottom = document.createElement("span");
+  bottom.className = "desc"; bottom.textContent = r[2];
+  td.append(top, bottom);
+  tr.appendChild(td);
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>
